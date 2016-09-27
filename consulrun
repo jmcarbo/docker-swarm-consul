@@ -12,8 +12,8 @@ export IP=$(hostname -I | cut -f 1 -d ' ')
 export LEADER=$(serf members|sort -k 2 | head -n 1 | cut -f 3 -d ' ' |cut -f 1 -d ':')
 if [$IP==$LEADER] 
 then
-	exec /usr/local/bin/consul agent -server -bind 0.0.0.0 -advertise $IP -bootstrap -data-dir=/tmp  >>/var/log/consul.log 2>&1
+	exec /usr/local/bin/consul agent -server -bind 0.0.0.0 -client $IP -advertise $IP -bootstrap -data-dir=/tmp  >>/var/log/consul.log 2>&1
 else
 
-	exec /usr/local/bin/consul agent -server -bind 0.0.0.0 -advertise $IP -data-dir=/tmp -join $LEADER -retry-join $LEADER  >>/var/log/consul.log 2>&1
+	exec /usr/local/bin/consul agent -server -bind 0.0.0.0 -client $IP -advertise $IP -data-dir=/tmp -join $LEADER -retry-join $LEADER  >>/var/log/consul.log 2>&1
 fi
