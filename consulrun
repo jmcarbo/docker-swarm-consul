@@ -1,0 +1,17 @@
+#!/bin/sh
+MEMBERS=$(serf members |wc |awk '{ print $1; }')
+MIN_MEMBERS=${MIN_MEMBERS:-3}
+
+while [ "$MIN_MEMBERS" -gt "$MEMBERS" ] do
+	sleep 5
+	MEMBERS=$(serf members |wc |awk '{ print $1; }')
+done
+
+export IP=$(hostname -I | cut -f 1 -d ' ')
+export LEADER=$(serf members|sort | head -n 1 | cut -f 3 -d ' ' |cut -f 1 -d ':')
+if [$IP==$LEADER] then
+	exec /usr/local/bin/consul agent -server -bind 0.0.0.0 -advertise $IP -bootstrap -data-dir=/tmp
+else
+
+	exec /usr/local/bin/consul agent -server -bind 0.0.0.0 -advertise $IP -bootstrap -data-dir=/tmp -join $LEADER -retry-join $LEADER
+fi
